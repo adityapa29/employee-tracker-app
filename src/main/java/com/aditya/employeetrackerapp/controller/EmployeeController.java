@@ -4,8 +4,6 @@ import com.aditya.employeetrackerapp.dto.EmployeeRequestDto;
 import com.aditya.employeetrackerapp.dto.PaginatedEmployeeResponse;
 import com.aditya.employeetrackerapp.entity.Employee;
 import com.aditya.employeetrackerapp.service.EmployeeService;
-import com.aditya.employeetrackerapp.service.ExceptionLogService;
-import com.aditya.employeetrackerapp.service.SequenceGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,12 +18,6 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
-
-    @Autowired
-    private ExceptionLogService exceptionLogService;
-
-    @Autowired
-    private SequenceGeneratorService sequenceGeneratorService;
 
     @GetMapping("/employees")
     public ResponseEntity<?> getAllEmployees() {
@@ -54,31 +46,40 @@ public class EmployeeController {
     @PutMapping("employee/{empId}")
     public ResponseEntity<?> updateEmployee(@PathVariable("empId") String empId,
                                             @Valid @RequestBody EmployeeRequestDto employeeRequestDto) {
-        Employee employee = employeeService.updateEmployee(empId,employeeRequestDto);
-        return new ResponseEntity<Employee>(employee,HttpStatus.OK);
+        Employee employee = employeeService.updateEmployee(empId, employeeRequestDto);
+        return new ResponseEntity<Employee>(employee, HttpStatus.OK);
     }
 
     @GetMapping("/employees/sort/{field}")
     public ResponseEntity<?> getPaginatedEmployees(@PathVariable("field") String field) {
         List<Employee> employees = employeeService.findEmployeesWithSorting(field);
-        PaginatedEmployeeResponse employeeResponse = new PaginatedEmployeeResponse(employees.size(),employees);
+        PaginatedEmployeeResponse employeeResponse = new PaginatedEmployeeResponse(employees.size(), employees);
         return new ResponseEntity<>(employeeResponse, HttpStatus.OK);
     }
 
     @GetMapping("/employees/page/{offset}/{pageSize}")
     public ResponseEntity<?> getPaginatedEmployees(@PathVariable("offset") int offset,
                                                    @PathVariable("pageSize") int pageSize) {
-        Page<Employee> employees = employeeService.findEmployeesWithPagination(offset,pageSize);
-        PaginatedEmployeeResponse employeeResponse = new PaginatedEmployeeResponse(employees.getSize(),employees);
+        Page<Employee> employees = employeeService.findEmployeesWithPagination(offset, pageSize);
+        PaginatedEmployeeResponse employeeResponse = new PaginatedEmployeeResponse(employees.getSize(), employees);
         return new ResponseEntity<>(employeeResponse, HttpStatus.OK);
     }
 
     @GetMapping("/employees/page_and_sort/{offset}/{pageSize}/{field}")
     public ResponseEntity<?> getPaginatedAndSortedEmployees(@PathVariable("offset") int offset,
-                                                   @PathVariable("pageSize") int pageSize,
-                                                   @PathVariable("field") String field) {
-        Page<Employee> employees = employeeService.findEmployeesWithPaginationAndSorting(offset,pageSize,field);
-        PaginatedEmployeeResponse employeeResponse = new PaginatedEmployeeResponse(employees.getSize(),employees);
+                                                            @PathVariable("pageSize") int pageSize,
+                                                            @PathVariable("field") String field) {
+        Page<Employee> employees = employeeService.findEmployeesWithPaginationAndSorting(offset, pageSize, field);
+        PaginatedEmployeeResponse employeeResponse = new PaginatedEmployeeResponse(employees.getSize(), employees);
         return new ResponseEntity<>(employeeResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/filter")
+    public ResponseEntity<?> filterEmployeesByProperties(@RequestParam(required = false) String id,
+                                                         @RequestParam String department,
+                                                         @RequestParam(required = false) String workLocation,
+                                                         @RequestParam(required = false) String dateOfJoining) {
+        List<Employee> employees = employeeService.filterEmployeesByProperties(id, department, workLocation, dateOfJoining);
+        return new ResponseEntity<List<Employee>>(employees, HttpStatus.OK);
     }
 }

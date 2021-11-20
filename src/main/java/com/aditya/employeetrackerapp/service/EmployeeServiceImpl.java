@@ -8,9 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,6 +25,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     private SequenceGeneratorService sequenceGeneratorService;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     private static final String SEQUENCE_KEY = "employee_sequence";
 
@@ -73,7 +80,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<Employee> findEmployeesWithSorting(String field) {
-        return employeeRepository.findAll(Sort.by(Sort.Direction.ASC,field));
+        return employeeRepository.findAll(Sort.by(Sort.Direction.ASC, field));
     }
 
     @Override
@@ -86,5 +93,23 @@ public class EmployeeServiceImpl implements EmployeeService {
     public Page<Employee> findEmployeesWithPaginationAndSorting(int offset, int pageSize, String field) {
         Page<Employee> employees = employeeRepository.findAll(PageRequest.of(offset, pageSize, Sort.by(Sort.Direction.ASC, field)));
         return employees;
+    }
+
+    @Override
+    public List<Employee> filterEmployeesByProperties(String id, String department, String workLocation, String dateOfJoining) {
+        final Query query = new Query();
+        final List<Criteria> criteria = new ArrayList<>();
+
+        criteria.add(Criteria.where("department").is(department));
+        if (id != null && !id.isEmpty())
+            criteria.add(Criteria.where("id").is(id));
+        if (workLocation != null && !workLocation.isEmpty())
+            criteria.add(Criteria.where("workLocation").is(workLocation));
+        if (dateOfJoining != null && !dateOfJoining.isEmpty())
+            criteria.add(Criteria.where("dateOfJoining").is(dateOfJoining));
+
+        if (!criteria.isEmpty())
+            query.addCriteria(new Criteria().andOperator(criteria.toArray(new Criteria[criteria.size()])));
+        return mongoTemplate.find(query, Employee.class);
     }
 }

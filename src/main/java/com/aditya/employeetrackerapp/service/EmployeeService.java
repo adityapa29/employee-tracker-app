@@ -23,4 +23,6 @@ public interface EmployeeService {
     Page<Employee> findEmployeesWithPagination(int offset, int pageSize);
 
     Page<Employee> findEmployeesWithPaginationAndSorting(int offset, int pageSize, String field);
+
+    List<Employee> filterEmployeesByProperties(String id, String department, String workLocation, String dateOfJoining);
 }
