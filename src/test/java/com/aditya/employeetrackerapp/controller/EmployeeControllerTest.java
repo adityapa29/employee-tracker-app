@@ -47,27 +47,6 @@ public class EmployeeControllerTest {
 
         verify(employeeService, times(1)).getAllEmployees();
     }
-/*
-
-    @Test
-    public void addEmployeeTest() throws Exception {
-        AddEmployeeRequest employeeDto = new AddEmployeeRequest("Aditya", "Pandey", "Technology", "Delhi", "8448707340");
-        Employee employee = new Employee();
-        BeanUtils.copyProperties(employeeDto, employee);
-        employee.setId("1000");
-        employee.setEmail("aditya.pandey@test.com");
-        employee.setDateOfJoining("05-11-2021");
-
-        when(employeeService.addEmployee(Mockito.any(Employee.class))).thenReturn(employee);
-
-        mockMvc.perform(post("/employee")
-                        .content(asJsonString(employeeDto))
-                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("application/json"));
-        verify(employeeService, times(1)).addEmployee(any(Employee.class));
-    }
-*/
 
     public Employee fetchEmployeeObject() {
         Employee employee = new Employee("AS1003", "Anubhav", "Sikarwar", "anubhav.sikarwar@test.com", "Technology", "Gurgaon", "9876783244", "05-11-2021");
