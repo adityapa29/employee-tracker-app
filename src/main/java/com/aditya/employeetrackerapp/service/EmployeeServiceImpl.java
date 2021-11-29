@@ -75,6 +75,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setEmail(email);
         employee.setWorkLocation(employeeRequestDto.getWorkLocation());
         employee.setDepartment(employeeRequestDto.getDepartment());
+        System.out.println(employee.hashCode());
         return employeeRepository.save(employee);
     }
 

@@ -10,7 +10,6 @@ import javax.validation.constraints.NotEmpty;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmployeeRequestDto {
-    private String id;
     @NotEmpty
     private String firstName;
     @NotEmpty

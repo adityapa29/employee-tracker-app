@@ -1,61 +1,98 @@
 package com.aditya.employeetrackerapp.service;
 
+import com.aditya.employeetrackerapp.dto.EmployeeRequestDto;
 import com.aditya.employeetrackerapp.entity.Employee;
 import com.aditya.employeetrackerapp.exception.ResourceNotFoundException;
 import com.aditya.employeetrackerapp.repository.EmployeeRepository;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
-@ExtendWith(SpringExtension.class)
+@RunWith(MockitoJUnitRunner.class)
 public class EmployeeServiceTest {
 
     @MockBean
     private EmployeeRepository employeeRepository;
 
+    @MockBean
+    private SequenceGeneratorService sequenceGeneratorService;
+
     @Autowired
     private EmployeeService employeeService;
+
+    private static final String SEQUENCE_KEY = "employee_sequence";
 
     @Test
     public void testGetAllEmployees() {
         Employee employee1 = fetchEmployeeObject();
         Employee employee2 = fetchEmployeeObject();
         employee2.setId("KL1004");
-        List<Employee> employees = List.of(employee1,employee2);
+        List<Employee> employees = List.of(employee1, employee2);
         when(employeeRepository.findAll()).thenReturn(employees);
-        assertEquals(employees,employeeService.getAllEmployees());
+        assertEquals(2, employeeService.getAllEmployees().size());
     }
 
     @Test
     public void testGetAllEmployeesNegative() {
-        when(employeeRepository.findAll()).thenReturn(new ArrayList<>());
-        assertThrows(IllegalStateException.class, () -> employeeService.getAllEmployees());
+        List<Employee> employees = new ArrayList<>();
+        when(employeeRepository.findAll()).thenReturn(employees);
+        assertThrows(IllegalStateException.class, employeeService::getAllEmployees);
+    }
+
+    @Test
+    public void testAddEmployee() {
+        Employee employee = new Employee("1000", "Anubhav", "Sikarwar", "anubhav.sikarwar@dummy.com", "Technology", "Gurgaon", "9876783244", LocalDate.now().toString());
+        EmployeeRequestDto requestDto = new EmployeeRequestDto("Anubhav", "Sikarwar", "Technology","Gurgaon","9876783244");
+
+        when(sequenceGeneratorService.generateEmployeeId(SEQUENCE_KEY)).thenReturn(1000L);
+        when(employeeRepository.save(employee)).thenReturn(employee);
+        assertEquals(employee,employeeService.addEmployee(requestDto));
     }
 
     @Test
     public void testGetEmployeeById() {
         Employee employee = fetchEmployeeObject();
-        when(employeeRepository.findById("AS1003")).thenReturn(Optional.of(employee));
-        assertEquals(employee,employeeService.getEmployeeById("AS1003"));
+        when(employeeRepository.findById("AS1003")).thenReturn(Optional.ofNullable(employee));
+        assertEquals(employee.getId(), employeeService.getEmployeeById("AS1003").getId());
     }
 
     @Test
     public void testGetEmployeeByIdNegative() {
-        Employee employee = fetchEmployeeObject();
         when(employeeRepository.findById("AS1003")).thenThrow(ResourceNotFoundException.class);
-        assertThrows(ResourceNotFoundException.class,()->employeeService.getEmployeeById("AS1003"));
+        assertThrows(ResourceNotFoundException.class, () -> employeeService.getEmployeeById("AS1003"));
+    }
+
+    @Test
+    public void testDeleteEmployeeById() {
+        Employee employee = fetchEmployeeObject();
+        when(employeeRepository.findById("AS1003")).thenReturn(Optional.ofNullable(employee));
+        employeeService.deleteEmployeeById("AS1003");
+        verify(employeeRepository,times(1)).delete(employee);
+    }
+
+    @Test
+    public void testUpdateEmployee() {
+        EmployeeRequestDto requestDto = new EmployeeRequestDto("Aditya", "Pandey", "Technology","Bangalore","9876783244");
+        Employee employee = fetchEmployeeObject();
+        when(employeeRepository.findById("AS1003")).thenReturn(Optional.ofNullable(employee));
+        when(employeeRepository.save(employee)).thenReturn(employee);
+        assertEquals("Aditya",employeeService.updateEmployee("AS1003",requestDto).getFirstName());
+        assertEquals("Pandey",employeeService.updateEmployee("AS1003",requestDto).getLastName());
+        assertEquals("Technology",employeeService.updateEmployee("AS1003",requestDto).getDepartment());
+        assertEquals("Bangalore",employeeService.updateEmployee("AS1003",requestDto).getWorkLocation());
     }
 
     public Employee fetchEmployeeObject() {
