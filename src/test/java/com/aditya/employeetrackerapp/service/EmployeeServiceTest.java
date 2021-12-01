@@ -4,12 +4,13 @@ import com.aditya.employeetrackerapp.dto.EmployeeRequestDto;
 import com.aditya.employeetrackerapp.entity.Employee;
 import com.aditya.employeetrackerapp.exception.ResourceNotFoundException;
 import com.aditya.employeetrackerapp.repository.EmployeeRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -20,20 +21,24 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
 @RunWith(MockitoJUnitRunner.class)
 public class EmployeeServiceTest {
 
-    @MockBean
+    @Mock
     private EmployeeRepository employeeRepository;
 
-    @MockBean
+    @Mock
     private SequenceGeneratorService sequenceGeneratorService;
 
-    @Autowired
-    private EmployeeService employeeService;
+    @InjectMocks
+    private EmployeeServiceImpl employeeService;
 
     private static final String SEQUENCE_KEY = "employee_sequence";
+
+    @BeforeEach
+    public void init() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     public void testGetAllEmployees() {
